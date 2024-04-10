@@ -1,23 +1,34 @@
-import logo from './logo.svg';
+import React from 'react';
 import './App.css';
+import { LLHugMainComponent } from '@livelike/tf1-components';
+import { useLiveLikeInit } from './useLivelike.ts';
+
 
 function App() {
+  const clientId = 'jpyNYfoE7c1HLLa7gCydApSlh6k1vigaNbne7Key';
+  const { isLoading, userProfile } = useLiveLikeInit({
+    clientId: clientId
+  })
+
+  if (isLoading) {
+    return (
+      <p>Loading...</p>
+    );
+  }
+
+  if (!userProfile) {
+    return <p>Error In Loading livelike...</p>
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <LLHugMainComponent clientId='jpyNYfoE7c1HLLa7gCydApSlh6k1vigaNbne7Key'
+        customId={'tf1live'}
+        LiveLike={(window).LiveLike}
+        version={2}
+        returnBtnClickHandler={() => {
+        console.log("Return handled")
+      }}></LLHugMainComponent>
     </div>
   );
 }
