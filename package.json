@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@livelike/engagementsdk": "2.50.1",
-    "@livelike/tf1-components": "^1.11.3",
+    "@livelike/tf1-components": "^1.11.4",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
