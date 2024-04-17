@@ -23,7 +23,7 @@ function App() {
   return (
     <div className="App">
       <LLHugMainComponent clientId={clientId}
-        customId={'tf1liveV2'}
+        customId={'tf1liv2'}
         LiveLike={(window).LiveLike}
         version={2}
         returnBtnClickHandler={() => {
