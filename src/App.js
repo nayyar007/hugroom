@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import { LLHugMainComponent } from "@livelike/tf1-components";
+// import { LLHugMainComponent } from "@livelike/tf1-components";
 import { useLiveLikeInit } from "./useLivelike.ts";
 
 function App() {
@@ -19,15 +19,10 @@ function App() {
 
   return (
     <div className="App">
-      <LLHugMainComponent
-        clientId={clientId}
-        customId={"tf1live"}
-        LiveLike={window.LiveLike}
-        version={3}
-        returnBtnClickHandler={() => {
-          console.log("Return handled");
-        }}
-      ></LLHugMainComponent>
+      <iframe
+        src="https://tgl-dev.livelikeapp.com/"
+        className="tgl-iframe"
+      ></iframe>
     </div>
   );
 }
