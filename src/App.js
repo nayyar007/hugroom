@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import "./App.css";
 // import { LLHugMainComponent } from "@livelike/tf1-components";
 import { useLiveLikeInit } from "./useLivelike.ts";
-
+import LocationComponent from "./LocationComponent";
 function App() {
   const clientId = "jpyNYfoE7c1HLLa7gCydApSlh6k1vigaNbne7Key";
   const { isLoading, userProfile } = useLiveLikeInit({
@@ -33,11 +33,7 @@ function App() {
 
   return (
     <div className="App">
-      <iframe
-        src="https://tgl-dev.livelikeapp.com/"
-        className="tgl-iframe"
-        title="TGL"
-      ></iframe>
+      <LocationComponent />
     </div>
   );
 }
