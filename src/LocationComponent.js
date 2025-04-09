@@ -42,49 +42,34 @@ const LocationComponent = () => {
     setIsLoading(true);
     setError(null);
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const currentLat = position.coords.latitude;
-          const currentLng = position.coords.longitude;
-          const distance = checkRegion(currentLat, currentLng);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.watchPosition(
+        function (position) {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          const accuracy = position.coords.accuracy; // in meters
 
-          setLocation({
-            latitude: currentLat,
-            longitude: currentLng,
-            accuracy: position.coords.accuracy,
-            distance: distance,
-          });
-          setIsLoading(false);
-        },
-        (error) => {
-          let errorMessage = "Error getting location: ";
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage +=
-                "Please allow location access to use this feature.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage += "Location information is unavailable.";
-              break;
-            case error.TIMEOUT:
-              errorMessage += "The request to get user location timed out.";
-              break;
-            default:
-              errorMessage += "An unknown error occurred.";
+          console.log(`Latitude: ${latitude}`);
+          console.log(`Longitude: ${longitude}`);
+          console.log(`Accuracy: ${accuracy} meters`);
+
+          if (accuracy <= 5) {
+            console.log("Location is within 5 meters of accuracy.");
+          } else {
+            console.log("Accuracy is not within 5 meters.");
           }
-          setError(errorMessage);
-          setIsLoading(false);
+        },
+        function (error) {
+          console.error("Error getting location: ", error.message);
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000, // Increased timeout to allow more time for high accuracy
-          maximumAge: 0,
+          timeout: 15000, // Wait up to 15 seconds
+          maximumAge: 0, // Do not use cached location
         }
       );
     } else {
-      setError("Geolocation is not supported by this browser.");
-      setIsLoading(false);
+      console.log("Geolocation is not supported by this browser.");
     }
   };
 
