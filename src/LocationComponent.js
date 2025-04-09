@@ -1,9 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const LocationComponent = () => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInRegion, setIsInRegion] = useState(null);
+
+  // Target coordinates
+  const targetLat = 30.903825140141603;
+  const targetLng = 75.90097405628944;
+  const radius = 20; // meters
+
+  // Function to calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distance in meters
+  };
+
+  const checkRegion = (currentLat, currentLng) => {
+    const distance = calculateDistance(
+      currentLat,
+      currentLng,
+      targetLat,
+      targetLng
+    );
+    setIsInRegion(distance <= radius);
+    return distance;
+  };
 
   const getLocation = () => {
     setIsLoading(true);
@@ -12,10 +45,15 @@ const LocationComponent = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          const currentLat = position.coords.latitude;
+          const currentLng = position.coords.longitude;
+          const distance = checkRegion(currentLat, currentLng);
+
           setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
+            latitude: currentLat,
+            longitude: currentLng,
             accuracy: position.coords.accuracy,
+            distance: distance,
           });
           setIsLoading(false);
         },
@@ -40,7 +78,7 @@ const LocationComponent = () => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 5000,
+          timeout: 10000, // Increased timeout to allow more time for high accuracy
           maximumAge: 0,
         }
       );
@@ -50,17 +88,26 @@ const LocationComponent = () => {
     }
   };
 
+  // Try to get location automatically when component mounts
+  useEffect(() => {
+    getLocation();
+  }, []);
+
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Location Access</h2>
+      <h2 style={styles.title}>Location Check</h2>
 
       {!location && !error && !isLoading && (
         <button onClick={getLocation} style={styles.button}>
-          Allow Location Access
+          Check My Location
         </button>
       )}
 
-      {isLoading && <p style={styles.message}>Getting your location...</p>}
+      {isLoading && (
+        <p style={styles.message}>
+          Getting your location with high accuracy...
+        </p>
+      )}
 
       {error && (
         <div style={styles.error}>
@@ -83,6 +130,24 @@ const LocationComponent = () => {
           <p>
             <strong>Accuracy:</strong> {location.accuracy} meters
           </p>
+          <p>
+            <strong>Distance from Target:</strong>{" "}
+            {location.distance.toFixed(2)} meters
+          </p>
+
+          <div style={isInRegion ? styles.insideRegion : styles.outsideRegion}>
+            <h3>{isInRegion ? "Inside Region ✅" : "Outside Region ❌"}</h3>
+            <p>
+              Target Region: 20 meters radius from ({targetLat}, {targetLng})
+            </p>
+          </div>
+
+          {location.accuracy > 10 && (
+            <p style={styles.warning}>
+              Note: For better accuracy, try moving to an open area with clear
+              sky view.
+            </p>
+          )}
           <a
             href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
             target="_blank"
@@ -135,11 +200,30 @@ const styles = {
     borderRadius: "5px",
     backgroundColor: "#f9f9f9",
   },
+  insideRegion: {
+    marginTop: "15px",
+    padding: "10px",
+    backgroundColor: "#e8f5e9",
+    borderRadius: "4px",
+    color: "#2e7d32",
+  },
+  outsideRegion: {
+    marginTop: "15px",
+    padding: "10px",
+    backgroundColor: "#ffebee",
+    borderRadius: "4px",
+    color: "#c62828",
+  },
   mapLink: {
     display: "inline-block",
     marginTop: "10px",
     color: "#2196F3",
     textDecoration: "none",
+  },
+  warning: {
+    color: "#f57c00",
+    fontStyle: "italic",
+    marginTop: "10px",
   },
 };
 
