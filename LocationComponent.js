@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import jsQR from "jsqr";
 
 const LocationComponent = () => {
   const [location, setLocation] = useState(null);
@@ -6,8 +7,11 @@ const LocationComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isInRegion, setIsInRegion] = useState(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [qrCode, setQrCode] = useState(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const canvasRef = useRef(null);
+  const animationFrameRef = useRef(null);
 
   // Target coordinates
   const targetLat = 30.903825140141603;
@@ -91,6 +95,38 @@ const LocationComponent = () => {
     }
   };
 
+  const scanQRCode = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Draw the video frame to the canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Get the image data from the canvas
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+    // Scan for QR code
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+    if (code) {
+      setQrCode(code.data);
+      // If it's a URL, you can navigate to it
+      if (code.data.startsWith("http")) {
+        window.open(code.data, "_blank");
+      }
+    }
+
+    // Continue scanning
+    animationFrameRef.current = requestAnimationFrame(scanQRCode);
+  };
+
   const openCamera = async () => {
     try {
       // First check if we already have a stream
@@ -121,6 +157,8 @@ const LocationComponent = () => {
         });
         // Start playing
         await videoRef.current.play();
+        // Start QR code scanning
+        scanQRCode();
       }
 
       setIsCameraOpen(true);
@@ -134,6 +172,9 @@ const LocationComponent = () => {
 
   const closeCamera = () => {
     try {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => {
           track.stop();
@@ -144,6 +185,7 @@ const LocationComponent = () => {
         videoRef.current.srcObject = null;
       }
       setIsCameraOpen(false);
+      setQrCode(null);
     } catch (err) {
       console.error("Error closing camera:", err);
       setError(`Error closing camera: ${err.message}`);
@@ -239,6 +281,22 @@ const LocationComponent = () => {
                 muted
                 style={styles.video}
               />
+              <canvas ref={canvasRef} style={styles.canvas} />
+              {qrCode && (
+                <div style={styles.qrCode}>
+                  <p>QR Code detected: {qrCode}</p>
+                  {qrCode.startsWith("http") && (
+                    <a
+                      href={qrCode}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={styles.qrLink}
+                    >
+                      Open Link
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -322,11 +380,33 @@ const styles = {
     overflow: "hidden",
     borderRadius: "8px",
     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+    position: "relative",
   },
   video: {
     width: "100%",
     height: "auto",
     display: "block",
+  },
+  canvas: {
+    display: "none", // Hide the canvas as we only need it for processing
+  },
+  qrCode: {
+    position: "absolute",
+    bottom: "10px",
+    left: "10px",
+    right: "10px",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    color: "white",
+    padding: "10px",
+    borderRadius: "4px",
+    textAlign: "center",
+  },
+  qrLink: {
+    color: "#4CAF50",
+    textDecoration: "none",
+    fontWeight: "bold",
+    marginTop: "5px",
+    display: "inline-block",
   },
 };
 
