@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const LocationComponent = () => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInRegion, setIsInRegion] = useState(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
 
   // Target coordinates
   const targetLat = 30.903825140141603;
@@ -78,7 +81,7 @@ const LocationComponent = () => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000, // Increased timeout to allow more time for high accuracy
+          timeout: 10000,
           maximumAge: 0,
         }
       );
@@ -88,9 +91,41 @@ const LocationComponent = () => {
     }
   };
 
-  // Try to get location automatically when component mounts
+  const openCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment", // Use back camera by default
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCameraOpen(true);
+    } catch (err) {
+      setError("Error accessing camera: " + err.message);
+    }
+  };
+
+  const closeCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraOpen(false);
+  };
+
   useEffect(() => {
     getLocation();
+    return () => {
+      closeCamera(); // Cleanup camera when component unmounts
+    };
   }, []);
 
   return (
@@ -148,14 +183,29 @@ const LocationComponent = () => {
               sky view.
             </p>
           )}
-          <a
-            href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={styles.mapLink}
-          >
-            View on Google Maps
-          </a>
+
+          <div style={styles.buttonContainer}>
+            <button
+              onClick={isCameraOpen ? closeCamera : openCamera}
+              style={styles.button}
+            >
+              {isCameraOpen ? "Close Camera" : "Open Camera"}
+            </button>
+            <a
+              href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.mapLink}
+            >
+              View on Google Maps
+            </a>
+          </div>
+
+          {isCameraOpen && (
+            <div style={styles.cameraContainer}>
+              <video ref={videoRef} autoPlay playsInline style={styles.video} />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -181,6 +231,12 @@ const styles = {
     borderRadius: "4px",
     cursor: "pointer",
     fontSize: "16px",
+    marginRight: "10px",
+  },
+  buttonContainer: {
+    display: "flex",
+    alignItems: "center",
+    marginTop: "15px",
   },
   message: {
     color: "#666",
@@ -216,7 +272,6 @@ const styles = {
   },
   mapLink: {
     display: "inline-block",
-    marginTop: "10px",
     color: "#2196F3",
     textDecoration: "none",
   },
@@ -224,6 +279,19 @@ const styles = {
     color: "#f57c00",
     fontStyle: "italic",
     marginTop: "10px",
+  },
+  cameraContainer: {
+    marginTop: "20px",
+    width: "100%",
+    maxWidth: "100%",
+    overflow: "hidden",
+    borderRadius: "8px",
+    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+  },
+  video: {
+    width: "100%",
+    height: "auto",
+    display: "block",
   },
 };
 
