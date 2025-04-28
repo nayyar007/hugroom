@@ -93,38 +93,67 @@ const LocationComponent = () => {
 
   const openCamera = async () => {
     try {
+      // First check if we already have a stream
+      if (streamRef.current) {
+        closeCamera();
+      }
+
+      // Request camera access with specific constraints
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: "environment", // Use back camera by default
+          facingMode: "environment",
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
       });
+
+      // Store the stream
       streamRef.current = stream;
+
+      // Set up the video element
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        // Wait for the video to be ready
+        await new Promise((resolve) => {
+          videoRef.current.onloadedmetadata = () => {
+            resolve();
+          };
+        });
+        // Start playing
+        await videoRef.current.play();
       }
+
       setIsCameraOpen(true);
+      setError(null);
     } catch (err) {
-      setError("Error accessing camera: " + err.message);
+      console.error("Camera error:", err);
+      setError(`Error accessing camera: ${err.message}`);
+      setIsCameraOpen(false);
     }
   };
 
   const closeCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
+    try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+        streamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      setIsCameraOpen(false);
+    } catch (err) {
+      console.error("Error closing camera:", err);
+      setError(`Error closing camera: ${err.message}`);
     }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setIsCameraOpen(false);
   };
 
   useEffect(() => {
     getLocation();
     return () => {
-      closeCamera(); // Cleanup camera when component unmounts
+      closeCamera();
     };
   }, []);
 
@@ -203,7 +232,13 @@ const LocationComponent = () => {
 
           {isCameraOpen && (
             <div style={styles.cameraContainer}>
-              <video ref={videoRef} autoPlay playsInline style={styles.video} />
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                style={styles.video}
+              />
             </div>
           )}
         </div>
