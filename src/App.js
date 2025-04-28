@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import "./App.css";
 // import { LLHugMainComponent } from "@livelike/tf1-components";
 import { useLiveLikeInit } from "./useLivelike.ts";
-import LocationComponent from "./LocationComponent";
+import QRComponent from "./QRComponent";
 function App() {
   const clientId = "jpyNYfoE7c1HLLa7gCydApSlh6k1vigaNbne7Key";
   const { isLoading, userProfile } = useLiveLikeInit({
@@ -33,7 +33,7 @@ function App() {
 
   return (
     <div className="App">
-      <LocationComponent />
+      <QRComponent />
     </div>
   );
 }
