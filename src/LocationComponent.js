@@ -1,17 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import jsQR from "jsqr";
 
 const LocationComponent = () => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInRegion, setIsInRegion] = useState(null);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [qrCode, setQrCode] = useState(null);
   const videoRef = useRef(null);
-  const streamRef = useRef(null);
-  const canvasRef = useRef(null);
-  const animationFrameRef = useRef(null);
 
   // Target coordinates
   const targetLat = 30.903825140141603;
@@ -85,7 +79,7 @@ const LocationComponent = () => {
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
+          timeout: 10000, // Increased timeout to allow more time for high accuracy
           maximumAge: 0,
         }
       );
@@ -95,109 +89,25 @@ const LocationComponent = () => {
     }
   };
 
-  const scanQRCode = () => {
-    if (!videoRef.current || !canvasRef.current) return;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    // Draw the video frame to the canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Get the image data from the canvas
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
-    // Scan for QR code
-    const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-    if (code) {
-      setQrCode(code.data);
-      // If it's a URL, you can navigate to it
-      if (code.data.startsWith("http")) {
-        window.open(code.data, "_blank");
-      }
-    }
-
-    // Continue scanning
-    animationFrameRef.current = requestAnimationFrame(scanQRCode);
-  };
+  // Try to get location automatically when component mounts
+  useEffect(() => {
+    getLocation();
+  }, []);
 
   const openCamera = async () => {
     try {
-      // First check if we already have a stream
-      if (streamRef.current) {
-        closeCamera();
-      }
-
-      // Request camera access with specific constraints
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
+        video: { facingMode: "environment" },
       });
-
-      // Store the stream
-      streamRef.current = stream;
-
-      // Set up the video element
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Wait for the video to be ready
-        await new Promise((resolve) => {
-          videoRef.current.onloadedmetadata = () => {
-            resolve();
-          };
-        });
-        // Start playing
-        await videoRef.current.play();
-        // Start QR code scanning
-        scanQRCode();
+        videoRef.current.play();
       }
-
-      setIsCameraOpen(true);
-      setError(null);
     } catch (err) {
-      console.error("Camera error:", err);
-      setError(`Error accessing camera: ${err.message}`);
-      setIsCameraOpen(false);
+      console.error("Error accessing camera:", err);
+      alert("Unable to access the camera. Please check permissions.");
     }
   };
-
-  const closeCamera = () => {
-    try {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-        streamRef.current = null;
-      }
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
-      setIsCameraOpen(false);
-      setQrCode(null);
-    } catch (err) {
-      console.error("Error closing camera:", err);
-      setError(`Error closing camera: ${err.message}`);
-    }
-  };
-
-  useEffect(() => {
-    getLocation();
-    return () => {
-      closeCamera();
-    };
-  }, []);
 
   return (
     <div style={styles.container}>
@@ -254,53 +164,29 @@ const LocationComponent = () => {
               sky view.
             </p>
           )}
-
-          <div style={styles.buttonContainer}>
-            <button
-              onClick={isCameraOpen ? closeCamera : openCamera}
-              style={styles.button}
-            >
-              {isCameraOpen ? "Close Camera" : "Open Camera"}
-            </button>
-            <a
-              href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={styles.mapLink}
-            >
-              View on Google Maps
-            </a>
-          </div>
-
-          {isCameraOpen && (
-            <div style={styles.cameraContainer}>
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                style={styles.video}
-              />
-              <canvas ref={canvasRef} style={styles.canvas} />
-              {qrCode && (
-                <div style={styles.qrCode}>
-                  <p>QR Code detected: {qrCode}</p>
-                  {qrCode.startsWith("http") && (
-                    <a
-                      href={qrCode}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={styles.qrLink}
-                    >
-                      Open Link
-                    </a>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+          <a
+            href={`https://www.google.com/maps?q=${location.latitude},${location.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={styles.mapLink}
+          >
+            View on Google Maps
+          </a>
         </div>
       )}
+
+      {/* Button to open the camera */}
+      <div style={{ marginTop: "20px" }}>
+        <button onClick={openCamera} style={styles.cameraButton}>
+          Open Camera
+        </button>
+        <video
+          ref={videoRef}
+          style={{ marginTop: "20px", width: "100%", maxHeight: "300px" }}
+          autoPlay
+          playsInline
+        ></video>
+      </div>
     </div>
   );
 };
@@ -324,12 +210,15 @@ const styles = {
     borderRadius: "4px",
     cursor: "pointer",
     fontSize: "16px",
-    marginRight: "10px",
   },
-  buttonContainer: {
-    display: "flex",
-    alignItems: "center",
-    marginTop: "15px",
+  cameraButton: {
+    padding: "10px 20px",
+    backgroundColor: "#2196F3",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "16px",
   },
   message: {
     color: "#666",
@@ -365,6 +254,7 @@ const styles = {
   },
   mapLink: {
     display: "inline-block",
+    marginTop: "10px",
     color: "#2196F3",
     textDecoration: "none",
   },
@@ -372,41 +262,6 @@ const styles = {
     color: "#f57c00",
     fontStyle: "italic",
     marginTop: "10px",
-  },
-  cameraContainer: {
-    marginTop: "20px",
-    width: "100%",
-    maxWidth: "100%",
-    overflow: "hidden",
-    borderRadius: "8px",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    position: "relative",
-  },
-  video: {
-    width: "100%",
-    height: "auto",
-    display: "block",
-  },
-  canvas: {
-    display: "none", // Hide the canvas as we only need it for processing
-  },
-  qrCode: {
-    position: "absolute",
-    bottom: "10px",
-    left: "10px",
-    right: "10px",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    color: "white",
-    padding: "10px",
-    borderRadius: "4px",
-    textAlign: "center",
-  },
-  qrLink: {
-    color: "#4CAF50",
-    textDecoration: "none",
-    fontWeight: "bold",
-    marginTop: "5px",
-    display: "inline-block",
   },
 };
 
