@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const LocationComponent = () => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInRegion, setIsInRegion] = useState(null);
+  const videoRef = useRef(null);
 
   // Target coordinates
   const targetLat = 30.903825140141603;
@@ -93,6 +94,21 @@ const LocationComponent = () => {
     getLocation();
   }, []);
 
+  const openCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      alert("Unable to access the camera. Please check permissions.");
+    }
+  };
+
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>Location Check</h2>
@@ -158,6 +174,19 @@ const LocationComponent = () => {
           </a>
         </div>
       )}
+
+      {/* Button to open the camera */}
+      <div style={{ marginTop: "20px" }}>
+        <button onClick={openCamera} style={styles.cameraButton}>
+          Open Camera
+        </button>
+        <video
+          ref={videoRef}
+          style={{ marginTop: "20px", width: "100%", maxHeight: "300px" }}
+          autoPlay
+          playsInline
+        ></video>
+      </div>
     </div>
   );
 };
@@ -176,6 +205,15 @@ const styles = {
   button: {
     padding: "10px 20px",
     backgroundColor: "#4CAF50",
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "16px",
+  },
+  cameraButton: {
+    padding: "10px 20px",
+    backgroundColor: "#2196F3",
     color: "white",
     border: "none",
     borderRadius: "4px",
