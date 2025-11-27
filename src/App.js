@@ -4,7 +4,7 @@ import { LLHugMainComponent } from "@livelike/tf1-components";
 import { useLiveLikeInit } from "./useLivelike.ts";
 // import QRComponent from "./QRComponent";
 function App() {
-  const clientId = "jpyNYfoE7c1HLLa7gCydApSlh6k1vigaNbne7Key";
+  const clientId = "q4p0w4FGx2gf0uGnqB6lB4bhrQcagfioJDsNDgs8";
   const { isLoading, userProfile } = useLiveLikeInit({
     clientId: clientId,
   });
@@ -33,15 +33,10 @@ function App() {
 
   return (
     <div className="App">
-      <LLHugMainComponent
-        clientId={clientId}
-        customId={"test-oct"}
-        LiveLike={window.LiveLike}
-        version={4}
-        returnBtnClickHandler={() => {
-          console.log("Return handled");
-        }}
-      ></LLHugMainComponent>
+      <iframe
+        className="tgl-iframe"
+        src="https://tgl-qa.livelikeapp.com/perfect-season.html?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIzNjk4NWE2LTdkN2ItNGIzMy1hMjc3LTAwMjY5ZjdmNmZhNSIsImNsaWVudF9pZCI6Ik45dDRYd3lNMVZKRmtOV2tJZUZxcWNTSWNScDRkYjFNRVVhbmZ3R0EiLCJhY2Nlc3NfdG9rZW4iOiJjM2FkYjFlZjhkMDNjYWM3ODcwOGQ3MjdjZjg1NjNhNWQ0YmM1NjUyIiwiaXNzIjoiYmxhc3RydCIsImlhdCI6MTc2MjUyNTAwNn0.rGXfpBYeR9m_DKs6DQZnVV6l9jsH6dUfNheFaPAct90"
+      />
     </div>
   );
 }
