@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import "./App.css";
-import { LLHugMainComponent } from "@livelike/tf1-components";
 import { useLiveLikeInit } from "./useLivelike.ts";
 // import QRComponent from "./QRComponent";
 function App() {
@@ -34,6 +33,7 @@ function App() {
   return (
     <div className="App">
       <iframe
+        title="LiveLike Content"
         className="tgl-iframe"
         src="https://tgl-qa.livelikeapp.com/perfect-season.html?accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImIzNjk4NWE2LTdkN2ItNGIzMy1hMjc3LTAwMjY5ZjdmNmZhNSIsImNsaWVudF9pZCI6Ik45dDRYd3lNMVZKRmtOV2tJZUZxcWNTSWNScDRkYjFNRVVhbmZ3R0EiLCJhY2Nlc3NfdG9rZW4iOiJjM2FkYjFlZjhkMDNjYWM3ODcwOGQ3MjdjZjg1NjNhNWQ0YmM1NjUyIiwiaXNzIjoiYmxhc3RydCIsImlhdCI6MTc2MjUyNTAwNn0.rGXfpBYeR9m_DKs6DQZnVV6l9jsH6dUfNheFaPAct90"
       />

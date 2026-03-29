@@ -19,7 +19,7 @@ export const useLiveLikeInit = ({endpoint, clientId} : any) => {
           applyLocalization()
         });
        });
-    }, []);
+    }, [clientId, endpoint]);
 
     return { userProfile, isLoading };
 };
