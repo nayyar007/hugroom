@@ -25,6 +25,8 @@ export default function WtaPage() {
         gap: "15px",
       }}
     >
+      <text-poll widgetid="76ecda85-59ed-4281-9645-83a1bbf87e49"></text-poll>
+      <image-poll widgetid="8c44ce0c-41bd-405c-bd14-1411366e9442"></image-poll>
       {/* text-poll */}
       <text-poll widgetid="fcc2f850-3e82-4579-83cd-154311868879"></text-poll>
       <text-poll widgetid="c45fb515-c26e-4571-8b44-b86826af1845"></text-poll>
