@@ -25,6 +25,9 @@ export default function WtaPage() {
         gap: "15px",
       }}
     >
+      <image-poll widgetid="ba30019b-c61f-40f7-9ec4-3c7618580290"></image-poll>
+      <image-quiz widgetid="2f8f77c8-00cd-4223-abf2-efd501689868"></image-quiz>
+      <image-prediction widgetid="920d5eb4-6acd-46e5-99c8-6908f0ede2e4"></image-prediction>
       <text-poll widgetid="76ecda85-59ed-4281-9645-83a1bbf87e49"></text-poll>
       <image-poll widgetid="8c44ce0c-41bd-405c-bd14-1411366e9442"></image-poll>
       {/* text-poll */}
@@ -32,7 +35,7 @@ export default function WtaPage() {
       <text-poll widgetid="c45fb515-c26e-4571-8b44-b86826af1845"></text-poll>
 
       {/* image-poll */}
-      <image-poll widgetid="6455697a-4653-44a0-a3b3-64f8f832bb3a"></image-poll>
+      <image-poll widgetid="ba30019b-c61f-40f7-9ec4-3c7618580290"></image-poll>
       <image-poll widgetid="19a68d03-d864-4943-888d-59f46341aaee"></image-poll>
 
       {/* text-prediction */}
@@ -40,7 +43,7 @@ export default function WtaPage() {
       <text-prediction widgetid="fdab59dd-07a5-4633-a55e-29b609511e2b"></text-prediction>
 
       {/* image-prediction */}
-      <image-prediction widgetid="6edb3cd5-9ae4-42e2-b719-b4fb18039068"></image-prediction>
+
       <image-prediction widgetid="d38cf48f-a8a5-40e0-853b-ad0801a0f572"></image-prediction>
 
       {/* text-quiz */}
@@ -48,7 +51,7 @@ export default function WtaPage() {
       <text-quiz widgetid="9d6c7f6c-e2e8-47c0-b109-1d251cb35f5c"></text-quiz>
 
       {/* image-quiz */}
-      <image-quiz widgetid="06110e01-e913-46c4-9f0c-b7b4a07d0392"></image-quiz>
+
       <image-quiz widgetid="b5a9cf26-1b2d-4b70-876b-ec6f74986b65"></image-quiz>
     </div>
   ) : (
